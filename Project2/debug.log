@@ -1,0 +1,21 @@
+15:03:10:729 [trace] FEReqProc.java:71 pool-1-thread-1: Received line: GET /tweets?q=test HTTP/1.1
+15:03:10:780 [trace] FEReqProc.java:86 pool-1-thread-1: JsonText: 
+15:03:10:780 [trace] DataStore.java:77 pool-1-thread-1: Request for verion of hashtag: test requested
+15:03:10:781 [trace] DataStore.java:80 pool-1-thread-1: Acquired getVersion Lock
+15:03:10:781 [trace] DataStore.java:85 pool-1-thread-1: Relinquished getVersion Lock
+15:03:10:785 [trace] FEReqProc.java:163 pool-1-thread-1: Received line: HTTP/1.1 200 OK
+15:03:10:786 [trace] FEReqProc.java:167 pool-1-thread-1: Buffer Size: 51
+15:03:10:786 [trace] FEReqProc.java:176 pool-1-thread-1: Received lineText: {"v":1,"q":"test","tweets":["Here is first #test"]}
+15:03:10:786 [trace] FEReqProc.java:180 pool-1-thread-1: Version for test was not current
+15:03:10:787 [trace] DataStore.java:99 pool-1-thread-1: Request to add tweet: Here is first #test with hashtag: test
+15:03:10:787 [trace] DataStore.java:102 pool-1-thread-1: Acquired addTweet Lock
+15:03:10:788 [trace] DataStore.java:123 pool-1-thread-1: Updating vector for: 10.10.34.160:2345 to: 1
+15:03:10:788 [trace] DataStore.java:127 pool-1-thread-1: Relinquished addTweet Lock
+15:03:10:788 [trace] FEReqProc.java:209 pool-1-thread-1: Closed DataServer socket connections
+15:03:10:788 [trace] DataStore.java:54 pool-1-thread-1: Tweets with hashtag: test requested
+15:03:10:788 [trace] DataStore.java:57 pool-1-thread-1: Acquired getTweet Lock
+15:03:10:789 [trace] DataStore.java:62 pool-1-thread-1: Relinquished getTweet Lock
+15:03:10:789 [trace] FEReqProc.java:216 pool-1-thread-1: Sending tweets: [Here is first #test]
+15:03:10:808 [trace] FEReqProc.java:227 pool-1-thread-1: Closed Client socket connection
+15:03:10:808 [trace] FEReqProc.java:136 pool-1-thread-1: Finished Working
+
