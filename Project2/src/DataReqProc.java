@@ -4,6 +4,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -51,7 +52,7 @@ public class DataReqProc implements Runnable {
 			if (reqLine == null)
 				rootLogger.trace("URI: null");
 			else if (reqLine.getMethod().equalsIgnoreCase("POST")
-					|| reqLine.getMethod().equalsIgnoreCase("CONNECT")) {
+					|| reqLine.getMethod().equalsIgnoreCase("GET")) {
 				line = in.readLine();
 				int bufferSize = Integer.parseInt(line.split(" ")[1]);
 				rootLogger.trace("Buffer Size: " + bufferSize);
@@ -70,7 +71,7 @@ public class DataReqProc implements Runnable {
 				if (reqLine.getMethod().equalsIgnoreCase("GET")
 						&& reqLine.getParameters().containsKey("v")
 						&& reqLine.getParameters().containsKey("q")) {
-					getDataRequest();
+					getDataRequest(jsonText);
 				}
 				
 				//POST request
@@ -83,11 +84,9 @@ public class DataReqProc implements Runnable {
 					else if(reqLine.getParameters().containsKey("s")) {
 						recvSnapshot(jsonText);
 					}
-					//Fellow Data Server sharing an update
-					else if(reqLine.getParameters().containsKey("u")) {
-						//TODO: update
-					}
-					//FE server sending tweet
+
+					//FE server sending tweet or fellow Data Server sharing an 
+					//update
 					else {
 						postDataRequest(jsonText);
 					}	
@@ -135,32 +134,55 @@ public class DataReqProc implements Runnable {
 	 * Method for handling DATA GET requests
 	 */
 	@SuppressWarnings("unchecked")
-	private void getDataRequest() throws IOException {
+	private void getDataRequest(String jsonText) throws IOException {
 		int version = Integer.parseInt(reqLine.getParameters().get("v"));
 		String hashtag = reqLine.getParameters().get("q");
 		rootLogger.trace("Received GET request with hashtag: "
 				+ hashtag + " and version: " + version);
 
 		int currentVersion = ds.getVersion(hashtag);
-		if(version != currentVersion) {
-			ArrayList<String> tweets = ds.getTweet(hashtag);
-			JSONObject obj = new JSONObject();
-			obj.put("q", hashtag);
-			obj.put("v", currentVersion);
-			obj.put("tweets", tweets);
+		HashMap<String, String> vectors = ds.getServerVectoList();
+		
+		JSONObject obj;
+		try {
+			obj = (JSONObject) parser.parse(jsonText);
+			boolean vectorsNeedUpate = true;
+		
+			// Needs update if its vector timestamp is less than the Data 
+			// Server's for all servers
+			HashMap<String, String> FEvectors = (HashMap<String, String>) obj
+					.get("vec");
+			for (String server : vectors.keySet()) {
+				if (Integer.parseInt(vectors.get(server)) < 
+						Integer.parseInt(FEvectors.get(server))) {
+					vectorsNeedUpate = false;
+					break;
+				}
+			}
 
-			String responsebody = obj.toJSONString();
-			String responseheaders = "HTTP/1.1 200 OK\n" + "Content-Length: "
-					+ responsebody.getBytes().length + "\n\n";
-			OutputStream out = sock.getOutputStream();
-			out.write(responseheaders.getBytes());
-			out.write(responsebody.getBytes());
-			out.flush();
-			out.close();
-			
-		} else {
-			String responseheaders = "HTTP/1.1 304 Not Modified\n";
-			returnHeaderOnly(responseheaders);
+			if(version != currentVersion && vectorsNeedUpate) {
+				ArrayList<String> tweets = ds.getTweet(hashtag);
+				obj = new JSONObject();
+				obj.put("q", hashtag);
+				obj.put("v", currentVersion);
+				obj.put("tweets", tweets);
+				obj.put("vec", vectors);
+	
+				String responsebody = obj.toJSONString();
+				String responseheaders = "HTTP/1.1 200 OK\n" + "Content-Length: "
+						+ responsebody.getBytes().length + "\n\n";
+				OutputStream out = sock.getOutputStream();
+				out.write(responseheaders.getBytes());
+				out.write(responsebody.getBytes());
+				out.flush();
+				out.close();
+				
+			} else {
+				String responseheaders = "HTTP/1.1 304 Not Modified\n";
+				returnHeaderOnly(responseheaders);
+			}
+		} catch (ParseException | NullPointerException e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -174,7 +196,7 @@ public class DataReqProc implements Runnable {
 		try {
 			obj=(JSONObject) parser.parse(jsonText);
 			
-			if (obj == null) {
+			if (obj == null || !obj.containsKey("hashtags")) {
 				String responseheaders = "HTTP/1.1 400 Bad Request\n";
 				rootLogger.trace("Bad Request");
 				returnHeaderOnly(responseheaders);
@@ -184,23 +206,90 @@ public class DataReqProc implements Runnable {
 				ArrayList<String> hashtags = (ArrayList<String>) obj
 						.get("hashtags");
 				String tweet = (String) obj.get("tweet");
-				if (hashtags == null || hashtags.size() == 0 || tweet == null
-						|| tweet.length() == 0) {
-					if (obj.containsKey("servers") && obj.containsKey("data")
-							&& obj.containsKey("vers")) {
-						ds.setSnapshot(obj);
+				HashMap<String, String> info; 
+				String self = null;
+				String myVector = null;
+				int count = 0;
+				
+				if(reqLine.getParameters().containsKey("u")) {
+					String theirSelf = (String) obj.get("self");
+					String theirVector = (String) obj.get("vector");
+					
+					info = ds.addTweets(hashtags, tweet, -1, null, false, theirSelf, theirVector);
+					if(info != null) {
+						self = info.get("self");
+						info.remove("self");
+						info.remove(self);
+						info.remove(theirSelf);
+						myVector = theirVector;
+						self = theirSelf;
+					}
+					else {
+						info = new HashMap<String, String>();
+					}
+					String responseheaders = "HTTP/1.1 201 Created\n";
+					returnHeaderOnly(responseheaders);
+				}
+				else {
+					info = ds.addTweets(hashtags, tweet, -1, null, true, null, null);
+					self = info.get("self");
+					myVector = info.get(self);
+					info.remove("self");
+					info.remove(self);
+				}
+				
+				for(String server: info.keySet()) {
+					// Send request to DataServer
+					String[] serverInfo = server.split(":");
+					Socket dataSock = null;
+					try {
+						dataSock = new Socket(serverInfo[0], Integer.parseInt(serverInfo[1]));
+					} catch (IOException e) {
+						ds.removeServer(server);
+						continue;
+					}
+					
+					JSONObject obj2 = new JSONObject();
+					obj2.put("self", self);
+					obj2.put("vector", myVector);
+					obj2.put("tweet", tweet);
+					obj2.put("hashtags", hashtags);
+					String responsebody = obj2.toJSONString();
+					String requestheaders = "POST /tweets?u=update HTTP/" + reqLine.getVersion()
+							+ "\nContent-Length: " + responsebody.getBytes().length
+							+ "\n\n";
+					OutputStream out = dataSock.getOutputStream();
+					rootLogger.trace("Sending Request to DataStore: " + requestheaders.trim() +
+							" with body: " + responsebody);
+					
+					out.write(requestheaders.getBytes());
+					out.write(responsebody.getBytes());
+
+					String lineText = "";
+
+					// Receive response from DataServer
+					BufferedReader in = new BufferedReader(new InputStreamReader(
+							dataSock.getInputStream()));
+
+					lineText = in.readLine().trim();
+					rootLogger.trace("Received from DataStore: " + lineText);
+					
+					if (lineText.equalsIgnoreCase("HTTP/1.1 201 Created\n")) {
+						count += 1;
+					}
+
+					out.flush();
+					out.close();
+					in.close();
+					dataSock.close();
+					
+					if (count == 3 && !reqLine.getParameters().containsKey("u")) {
 						String responseheaders = "HTTP/1.1 201 Created\n";
 						returnHeaderOnly(responseheaders);
-					} else {
-						String responseheaders = "HTTP/1.1 400 Bad Request\n";
-						returnHeaderOnly(responseheaders);
+						count += 1;
 					}
 				}
-
-				else {
-					for (String hashtag : hashtags) {
-						ds.addTweet(hashtag, tweet, -1);
-					}
+				if (count < 3 && !reqLine.getParameters().containsKey("u")) {
 					String responseheaders = "HTTP/1.1 201 Created\n";
 					returnHeaderOnly(responseheaders);
 				}
@@ -213,7 +302,7 @@ public class DataReqProc implements Runnable {
 	
 	
 	/**
-	 * Method for handling Discovery GET requests
+	 * Method for handling Discovery requests
 	 */
 	private void recvDiscRequest(String jsonText) throws IOException {
 		JSONObject obj = null;
@@ -236,8 +325,6 @@ public class DataReqProc implements Runnable {
 
 				else {
 					ds.addServer(newServer);
-					String responseheaders = "HTTP/1.1 201 Created\n";
-					returnHeaderOnly(responseheaders);
 
 					if (isMin) {
 						// Send snapshot to newServer if you're min server
@@ -270,6 +357,9 @@ public class DataReqProc implements Runnable {
 						in.close();
 						dataSock.close();
 					}
+					
+					String responseheaders = "HTTP/1.1 200 OK\n";
+					returnHeaderOnly(responseheaders);
 				}
 			}
 		} catch (ParseException e) {

@@ -16,6 +16,7 @@ public class DataStore {
 	private HashMap<String, Integer> dataVersionMap;
 	private ReadWriteLock lock;
 	private HashMap<String, Integer> serverLoads;
+	private HashMap<String, HashMap<Integer, ArrayList<String>>> queue;
 
 	public DataStore(String self) {
 		this.self = self;
@@ -24,6 +25,7 @@ public class DataStore {
 		dataMap = new HashMap<String, ArrayList<String>>();
 		dataVersionMap = new HashMap<String, Integer>();
 		lock = new ReentrantReadWriteLock();
+		queue = new HashMap<String, HashMap<Integer, ArrayList<String>>>();
 	}
 
 	public DataStore() {
@@ -90,65 +92,218 @@ public class DataStore {
 	 * Adds given tweet to the array corresponding to the given hashtag. Creates
 	 * a new array if this hashtag does not exist yet
 	 */
-	public void addTweet(String hashtag, String tweet, int newVersion) {
+	public HashMap<String, String> addTweets(ArrayList<String> hashtags, String tweet,
+			int newVersion, HashMap<String, String> newServerVectors,
+			boolean isFromFEPost, String theirSelf, String theirVector) {
 		if (dataMap == null) {
 			rootLogger.trace("DataMap is null");
+			return null;
 		}
 
-		else {
-			rootLogger.trace("Request to add tweet: " + tweet
-					+ " with hashtag: " + hashtag);
-			lock.writeLock().lock();
-			rootLogger.trace("Acquired addTweet Lock");
-			ArrayList<String> tweets;
-			int version;
-			if (dataMap.keySet().contains(hashtag)) {
-				tweets = dataMap.get(hashtag);
-				tweets.add(tweet);
-				version = dataVersionMap.get(hashtag);
-				if (newVersion < version) {
-					dataVersionMap.put(hashtag, version + 1);
+		rootLogger.trace("Request to add tweet: " + tweet);
+		lock.writeLock().lock();
+		rootLogger.trace("Acquired addTweets Lock");
+		ArrayList<String> tweets;
+		int version;
+		
+		//Update from Front End
+		if (theirSelf == null && theirVector == null) {
+			for (String hashtag : hashtags) {
+				if (dataMap.keySet().contains(hashtag)) {
+					tweets = dataMap.get(hashtag);
+					tweets.add(tweet);
+					version = dataVersionMap.get(hashtag);
+					if (newVersion < version) {
+						dataVersionMap.put(hashtag, version + 1);
+					} else {
+						dataVersionMap.put(hashtag, newVersion);
+					}
 				} else {
-					dataVersionMap.put(hashtag, newVersion);
+					tweets = new ArrayList<String>();
+					tweets.add(tweet);
+					dataVersionMap.put(hashtag, 1);
 				}
-			} else {
-				tweets = new ArrayList<String>();
-				tweets.add(tweet);
-				dataVersionMap.put(hashtag, 1);
+				dataMap.put(hashtag, tweets);
 			}
-			dataMap.put(hashtag, tweets);
+		}
+		
+		//Update from another Data Server
+		else {
+			if (serverVectors.containsKey(theirSelf)) {
+				if (serverVectors.get(theirSelf) >= Integer.parseInt(theirVector)) {
+					return null;
+				}
+				else {
+					if (Integer.parseInt(theirVector) > (1 + serverVectors.get(theirSelf))) {
+						enqueue(theirSelf, theirVector, tweet, hashtags);
+						return null;
+					}
+					else {
+						serverVectors.put(theirSelf, Integer.parseInt(theirVector));
+						for (String hashtag : hashtags) {
+							if (dataMap.keySet().contains(hashtag)) {
+								tweets = dataMap.get(hashtag);
+								tweets.add(tweet);
+								version = dataVersionMap.get(hashtag);
+								if (newVersion < version) {
+									dataVersionMap.put(hashtag, version + 1);
+								} else {
+									dataVersionMap.put(hashtag, newVersion);
+								}
+							} else {
+								tweets = new ArrayList<String>();
+								tweets.add(tweet);
+								dataVersionMap.put(hashtag, 1);
+							}
+							dataMap.put(hashtag, tweets);
+						}
+						dequeue(theirSelf, theirVector);
+					}
+				}
+			}
+			
+			else {
+				if(Integer.parseInt(theirVector) > 1) {
+					enqueue(theirSelf, theirVector, tweet, hashtags);
+					return null;
+				}
+				serverVectors.put(theirSelf, Integer.parseInt(theirVector));
+				for (String hashtag : hashtags) {
+					if (dataMap.keySet().contains(hashtag)) {
+						tweets = dataMap.get(hashtag);
+						tweets.add(tweet);
+						version = dataVersionMap.get(hashtag);
+						if (newVersion < version) {
+							dataVersionMap.put(hashtag, version + 1);
+						} else {
+							dataVersionMap.put(hashtag, newVersion);
+						}
+					} else {
+						tweets = new ArrayList<String>();
+						tweets.add(tweet);
+						dataVersionMap.put(hashtag, 1);
+					}
+					dataMap.put(hashtag, tweets);
+				}
+				dequeue(theirSelf, theirVector);
+			}
+			return null;
+		}
 
+		if(isFromFEPost) {
 			int vector = serverVectors.get(self);
-			serverVectors.put(self, vector);
+			serverVectors.put(self, vector + 1);
 			rootLogger.trace("Updating vector for: " + self + " to: "
 					+ (vector + 1));
+		}
+		
+		if (newServerVectors != null) {
+			for (String server : newServerVectors.keySet()) {
+				serverVectors.put(server, Integer.parseInt(newServerVectors.get(server)));
+			}
+		}
+		HashMap<String, String> returnInfo = new HashMap<String, String>();
+		returnInfo.put("self", self);
+		for (String original : serverVectors.keySet()) {
+			returnInfo.put(original, serverVectors.get(original).toString());
+		}
 
-			lock.writeLock().unlock();
-			rootLogger.trace("Relinquished addTweet Lock");
+		lock.writeLock().unlock();
+		rootLogger.trace("Relinquished addTweet Lock");
+		return returnInfo;
+	}
+	
+	/**
+	 * Method for storing data that arrived too early in a queue to be gotten
+	 * later
+	 */
+	private void enqueue(String theirSelf, String theirVector, String tweet,
+			ArrayList<String> hashtags) {
+		if (queue.containsKey(theirSelf)) {
+			HashMap<Integer, ArrayList<String>> vectorHash = queue
+					.get(theirSelf);
+			if (!vectorHash.containsKey(Integer.parseInt(theirVector))) {
+				ArrayList<String> queueStrings = new ArrayList<String>();
+				queueStrings.add(tweet);
+				queueStrings.addAll(hashtags);
+				vectorHash.put(Integer.parseInt(theirVector), queueStrings);
+				queue.put(theirSelf, vectorHash);
+			}
+		} else {
+			ArrayList<String> queueStrings = new ArrayList<String>();
+			queueStrings.add(tweet);
+			queueStrings.addAll(hashtags);
+			HashMap<Integer, ArrayList<String>> vectorHash 
+				= new HashMap<Integer, ArrayList<String>>();
+			vectorHash.put(Integer.parseInt(theirVector), queueStrings);
+			queue.put(theirSelf, vectorHash);
 		}
 	}
 
 	/**
-	 * Returns a copy of the serverList
+	 * Method for adding data that arrived too early and placed in a queue into
+	 * the main data structure
 	 */
-	public HashMap<String, Integer> getServerList() {
+	private void dequeue(String theirSelf, String theirVector) {
+		if(queue.containsKey(theirSelf)) {
+			HashMap<Integer, ArrayList<String>> vectorHash = queue.get(theirSelf);
+			int vector = Integer.parseInt(theirVector);
+			while(true) {
+				if(vectorHash.containsKey(vector+1)) {
+					vector = vector + 1;
+					ArrayList<String> queueStrings = vectorHash.get(vector);
+					String tweet = queueStrings.get(0);
+					ArrayList<String> hashtags = new ArrayList<String>(); 
+					hashtags.addAll(1, queueStrings);
+					serverVectors.put(theirSelf, vector);
+					ArrayList<String> tweets;
+					
+					for (String hashtag : hashtags) {
+						if (dataMap.containsKey(hashtag)) {
+							tweets = dataMap.get(hashtag);
+							tweets.add(tweet);
+							int version = dataVersionMap.get(hashtag);
+							dataVersionMap.put(hashtag, version + 1);
+						} else {
+							tweets = new ArrayList<String>();
+							tweets.add(tweet);
+							dataVersionMap.put(hashtag, 1);
+						}
+						dataMap.put(hashtag, tweets);
+					}
+				}
+				else {
+					for(int i = 0; i < vector; i++) {
+						if(vectorHash.containsKey(i)) {
+							vectorHash.remove(i);
+						}
+					}
+					break;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Returns a copy of the serverVectors List
+	 */
+	public HashMap<String, String> getServerVectoList() {
 		if (serverVectors == null) {
 			rootLogger.trace("ServerList is null");
 			return null;
 		}
 
 		rootLogger.trace("Copy of serverList requested");
-		HashMap<String, Integer> serverVectorcpy = new HashMap<String, Integer>();
+		HashMap<String, String> serverVectorcpy = new HashMap<String, String>();
 		lock.readLock().lock();
 		rootLogger.trace("Acquired getServerList Lock");
 		for (String original : serverVectors.keySet()) {
-			serverVectorcpy.put(original, serverVectors.get(original));
+			serverVectorcpy.put(original, serverVectors.get(original).toString());
 		}
 		lock.readLock().unlock();
 		rootLogger.trace("Relinquished getServerList Lock");
 		return serverVectorcpy;
 	}
-	
 	
 	public String getMinServerLoad() {
 		
@@ -184,7 +339,7 @@ public class DataStore {
 	 * If newServer is not already present, returns a copy of the servers in
 	 * serverLoads and adds newServer.
 	 */
-	public HashMap<String, ArrayList<String>> getServerLoadList(String newServer) {
+	public ArrayList<String> getServerLoadList(String newServer) {
 		rootLogger.trace("Trying to add newServer: " + newServer);
 		if (serverLoads == null) {
 			rootLogger.trace("ServerLoads is null");
@@ -192,37 +347,39 @@ public class DataStore {
 		}
 
 		rootLogger.trace("getServerLoadList requested");
-		HashMap<String, ArrayList<String>> serverListcpy = new HashMap<String, ArrayList<String>>();
+		ArrayList<String> serverListcpy = new ArrayList<String>();
 		lock.writeLock().lock();
 		rootLogger.trace("Acquired getServerLoadList Lock");
 		ArrayList<String> temp = new ArrayList<String>();
-		ArrayList<String> temp2 = new ArrayList<String>();
 
 		if (!serverLoads.containsKey(newServer)) {
 			for (String server : serverLoads.keySet()) {
 				temp.add(server);
 			}
-			String minServer = "";
-			int min = 10000;
-			for (String server : serverLoads.keySet()) {
-				if (serverLoads.get(server) < min) {
-					min = serverLoads.get(server);
-					minServer = server;
+			
+			int size = temp.size();
+			for(int i = 0; i < size; i++) {
+				String minServer = "";
+				int min = 10000;
+				for (String server : temp) {
+					if (serverLoads.get(server) < min) {
+						min = serverLoads.get(server);
+						minServer = server;
+					}
 				}
+				serverListcpy.add(minServer);
+				temp.remove(minServer);
 			}
-			temp2.add(minServer);
+				
 			//Increase load of minServer
-			if(!minServer.isEmpty()) {
-				int load = serverLoads.get(minServer);
-				serverLoads.put(minServer, load + 1);
-				rootLogger.trace("Increased load of: " + minServer);
+			if(!serverListcpy.isEmpty()) {
+				int load = serverLoads.get(serverListcpy.get(0));
+				serverLoads.put(serverListcpy.get(0), load + 1);
+				rootLogger.trace("Increased load of: " + serverListcpy.get(0));
 			}
 			
 			serverLoads.put(newServer, 0);
 		}
-
-		serverListcpy.put("list", temp);
-		serverListcpy.put("min", temp2);
 
 		lock.writeLock().unlock();
 		rootLogger.trace("Relinquished getServerLoadList Lock");
@@ -342,5 +499,20 @@ public class DataStore {
 		rootLogger.trace("Relinquished getSnapshot Lock");
 		return obj;
 	}
+	
+	/**
+	 * Method for removing a server from the server list
+	 */
+	public void removeServer(String server) {
+		if(serverVectors == null) {
+			serverLoads.remove(server);
+		}
+		else {
+			serverVectors.remove(server);
+		}
+	}
+	
+	
+	
 
 }

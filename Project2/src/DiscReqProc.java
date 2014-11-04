@@ -4,7 +4,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -62,15 +61,8 @@ public class DiscReqProc implements Runnable {
 						returnHeaderOnly(responseheaders);
 					}
 					
-					HashMap<String, ArrayList<String>> serverMap = ds
-							.getServerLoadList(newServer);
-					ArrayList<String> minServerList = serverMap.get("min");
-					String minServer = "";
-					if(minServerList.size() > 0) {
-							minServer = minServerList.get(0);
-					}
-					ArrayList<String> servers = serverMap.get("list");
-					sendDiscRequest(newServer, servers, minServer);
+					ArrayList<String> minServerList = ds.getServerLoadList(newServer);
+					sendDiscRequest(newServer, minServerList);
 				}
 
 				// Neither GET nor POST request
@@ -137,16 +129,17 @@ public class DiscReqProc implements Runnable {
 	 * Method for handling Discovery POST requests
 	 */
 	@SuppressWarnings("unchecked")
-	private void sendDiscRequest(String newServer, ArrayList<String> servers,
-			String minServer) {
+	private void sendDiscRequest(String newServer, ArrayList<String> servers) {
 
 			int count = 0;
 			JSONObject obj = new JSONObject();
 			String responsebody = "";
 			String requestheaders = "";
+			boolean minSent = false;
+			
 			for (String server : servers) {
 				obj.put("new", newServer);
-				if (server.equalsIgnoreCase(minServer)) {
+				if (!minSent) {
 					obj.put("min", true);
 				} else {
 					obj.put("min", false);
@@ -179,6 +172,9 @@ public class DiscReqProc implements Runnable {
 					rootLogger
 							.trace("Received from DataStore: " + lineText);
 					if (lineText.equalsIgnoreCase("HTTP/1.1 200 OK\n")) {
+						if(!minSent) {
+							minSent = true;
+						}
 						count += 1;
 					}
 	
@@ -191,8 +187,9 @@ public class DiscReqProc implements Runnable {
 						returnHeaderOnly(responseheaders);
 						count += 1;
 					}
-				} catch (NumberFormatException | IOException e) {
+				} catch (IOException e) {
 					rootLogger.trace("Bad Server: " + server);
+					ds.removeServer(server);
 				}
 			}
 			if (count < 3) {

@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,6 +36,7 @@ public class FEReqProc implements Runnable {
 			String[] dataServerParts = dataServer[0].split(":");
 			try {
 				dataSock = new Socket(dataServerParts[0], Integer.parseInt(dataServerParts[1]));
+				System.out.println("Connected to: " + dataServerParts[0] + ":" + dataServerParts[1]);
 			} catch (NumberFormatException | IOException e) {
 				rootLogger.trace("Problem with server: " + dataServerParts[0]);
 				dataSock = null;
@@ -144,13 +146,18 @@ public class FEReqProc implements Runnable {
 	private void getFERequest() throws IOException {
 		String hashtag = reqLine.getParameters().get("q");
 		int version = ds.getVersion(hashtag);
+		HashMap<String, String> vectors = ds.getServerVectoList();
 		
 		//Send request to DataServer
+		JSONObject obj = new JSONObject();
+		obj.put("vec", vectors);
+		String requestbody = obj.toJSONString();
 		String requestheaders = "GET /tweets?q=" + hashtag + "&v=" + version
-				+ " HTTP/" + reqLine.getVersion() + "\n";
+				+ " HTTP/" + reqLine.getVersion() + "\nContent-Length: " 
+				+ requestbody.getBytes().length + "\n\n";
 		OutputStream out = dataSock.getOutputStream();
 		out.write(requestheaders.getBytes());
-		//out.write(("\n").getBytes());
+		out.write(requestbody.getBytes());		
 		
 		String line;
 		String lineText = "";
@@ -178,7 +185,7 @@ public class FEReqProc implements Runnable {
 		//If ds not up to date, update it
 		if(!lineText.trim().equalsIgnoreCase("HTTP/1.1 304 Not Modified")) {
 			rootLogger.trace("Version for " + hashtag + " was not current");
-			JSONObject obj = null;
+			obj = null;
 			try {
 				obj = (JSONObject) parser.parse(lineText);
 			} catch (ParseException e) {
@@ -194,9 +201,19 @@ public class FEReqProc implements Runnable {
 			else {
 				ArrayList<String> newTweets = (ArrayList<String>) obj.get("tweets");
 				int newVersion = (((Long) obj.get("v")).intValue());
+				HashMap<String, String> newVectors = (HashMap<String, String>) obj.get("vec");
+				ArrayList<String> hashtags = new ArrayList<String>();
+				hashtags.add(hashtag);
+				boolean first = true;
 				for (String tweet : newTweets) {
-					ds.addTweet(hashtag, tweet, newVersion);
-				}
+					if(first) {
+						ds.addTweets(hashtags, tweet, newVersion, newVectors, false, null, null);
+						first = false;
+					}
+					else {
+						ds.addTweets(hashtags, tweet, newVersion, null, false, null, null);
+					}
+				}	
 			}
 		}
 		else {
@@ -221,7 +238,7 @@ public class FEReqProc implements Runnable {
 		OutputStream out2 = sock.getOutputStream();
 		out2.write(responseheaders.getBytes());
 		out2.write(responsebody.getBytes());
-		//out2.write(("\n").getBytes());
+		
 		out2.flush();
 		out2.close();
 		rootLogger.trace("Closed Client socket connection");
@@ -269,7 +286,6 @@ public class FEReqProc implements Runnable {
 				
 				out.write(requestheaders.getBytes());
 				out.write(responsebody.getBytes());
-				//out.write(("\n").getBytes());
 
 				String lineText = "";
 
@@ -290,7 +306,9 @@ public class FEReqProc implements Runnable {
 		}
 	}
 	
-	
+	/**
+	 * Contacts Discovery Server to find out who its new Data Server is
+	 */
 	private String getDataServer(String discServer) {
 		String[] discParts = discServer.split(":");
 		String lineText = "";
