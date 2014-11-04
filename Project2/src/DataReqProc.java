@@ -153,10 +153,16 @@ public class DataReqProc implements Runnable {
 			HashMap<String, String> FEvectors = (HashMap<String, String>) obj
 					.get("vec");
 			for (String server : vectors.keySet()) {
-				if (Integer.parseInt(vectors.get(server)) < 
-						Integer.parseInt(FEvectors.get(server))) {
-					vectorsNeedUpate = false;
-					break;
+				if (FEvectors.containsKey(server)) {
+					if (Integer.parseInt(vectors.get(server)) < 
+							Integer.parseInt(FEvectors.get(server))) {
+						rootLogger.trace("FE vector: " + FEvectors.get(server)
+								+ " was greater than Data vector: " 
+								+ vectors.get(server) + " for server: " 
+								+ server);
+						vectorsNeedUpate = false;
+						break;
+					}
 				}
 			}
 

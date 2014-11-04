@@ -511,8 +511,20 @@ public class DataStore {
 			serverVectors.remove(server);
 		}
 	}
-	
-	
-	
 
+	/**
+	 * Seeds DataStore for testing purposes
+	 */
+	public void seed(String server, int vector, ArrayList<String> hashtags, 
+			String tweet, int newVersion) {
+		
+		ArrayList<String> data = new ArrayList<String>();
+		data.add(tweet);
+		for(String hashtag : hashtags) {
+			dataMap.put(hashtag, data);
+			dataVersionMap.put(hashtag, newVersion);
+		}
+		
+		serverVectors.put(server, vector);
+	}
 }

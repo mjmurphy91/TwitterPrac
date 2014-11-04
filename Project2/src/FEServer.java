@@ -28,8 +28,8 @@ public class FEServer {
 		}
 
 		int PORT = Integer.parseInt(args[0]);
-		
-		
+
+
 		System.out.println("Starting FE Server");
 		String[] fullIP = InetAddress.getLocalHost().toString().split("/");
 		String IP = fullIP[fullIP.length - 1];
