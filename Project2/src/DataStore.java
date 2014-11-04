@@ -109,6 +109,9 @@ public class DataStore {
 		//Update from Front End
 		if (theirSelf == null && theirVector == null) {
 			for (String hashtag : hashtags) {
+				if(newServerVectors != null && isFromFEPost == false) {
+					emptyHashtag(hashtag);
+				}
 				if (dataMap.keySet().contains(hashtag)) {
 					tweets = dataMap.get(hashtag);
 					tweets.add(tweet);
@@ -165,6 +168,8 @@ public class DataStore {
 			else {
 				if(Integer.parseInt(theirVector) > 1) {
 					enqueue(theirSelf, theirVector, tweet, hashtags);
+					lock.writeLock().unlock();
+					rootLogger.trace("Relinquished addTweet Lock and enqueueing");
 					return null;
 				}
 				serverVectors.put(theirSelf, Integer.parseInt(theirVector));
@@ -187,6 +192,8 @@ public class DataStore {
 				}
 				dequeue(theirSelf, theirVector);
 			}
+			lock.writeLock().unlock();
+			rootLogger.trace("Relinquished addTweet Lock");
 			return null;
 		}
 
@@ -504,12 +511,24 @@ public class DataStore {
 	 * Method for removing a server from the server list
 	 */
 	public void removeServer(String server) {
+		lock.writeLock().lock();
+		rootLogger.trace("Acquired removeServer Lock");
 		if(serverVectors == null) {
 			serverLoads.remove(server);
 		}
 		else {
 			serverVectors.remove(server);
 		}
+		lock.writeLock().unlock();
+		rootLogger.trace("Relinquished removeServer Lock");
+	}
+	
+	/**
+	 * FE method which empties the dataMap of the given hashtag so it can be 
+	 * updated
+	 */
+	private void emptyHashtag(String hashtag) {
+		dataMap.remove(hashtag);
 	}
 
 	/**

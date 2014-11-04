@@ -335,7 +335,7 @@ public class DataReqProc implements Runnable {
 					if (isMin) {
 						// Send snapshot to newServer if you're min server
 						String responsebody = ds.getSnapshot().toJSONString();
-						String requestheaders = "POST /tweets HTTP/"
+						String requestheaders = "POST /tweets?s=snap HTTP/"
 								+ reqLine.getVersion() + "\nContent-Length: "
 								+ responsebody.getBytes().length + "\n\n";
 						String[] serverParts = newServer.split(":");

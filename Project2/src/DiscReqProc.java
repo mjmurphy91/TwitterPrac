@@ -130,76 +130,68 @@ public class DiscReqProc implements Runnable {
 	 */
 	@SuppressWarnings("unchecked")
 	private void sendDiscRequest(String newServer, ArrayList<String> servers) {
-
-			int count = 0;
-			JSONObject obj = new JSONObject();
-			String responsebody = "";
-			String requestheaders = "";
-			boolean minSent = false;
+		JSONObject obj = new JSONObject();
+		String responsebody = "";
+		String requestheaders = "";
+		boolean minSent = false;
+		
+		String responseheaders = "HTTP/1.1 200 OK\n";
+		try {
+			returnHeaderOnly(responseheaders);
+		} catch (IOException e) {
+			rootLogger.trace("returnHeadersOnly failed");
+		}
+		
+		for (String server : servers) {
+			obj.put("new", newServer);
+			if (!minSent) {
+				obj.put("min", true);
+			} else {
+				obj.put("min", false);
+			}
 			
-			for (String server : servers) {
-				obj.put("new", newServer);
-				if (!minSent) {
-					obj.put("min", true);
-				} else {
-					obj.put("min", false);
-				}
-				
-				responsebody = obj.toJSONString();
-				requestheaders = "POST /tweets?d=disc HTTP/"
-						+ reqLine.getVersion() + "\nContent-Length: "
-						+ responsebody.getBytes().length + "\n\n";
-				
-				String[] serverParts = server.split(":");
-				Socket dataSock = null;
-				try {
-					dataSock = new Socket(serverParts[0],
-							Integer.parseInt(serverParts[1]));
-					OutputStream out = dataSock.getOutputStream();
-					rootLogger.trace("Sending Request to DataStore: "
-							+ requestheaders.trim() + " with body: "
-							+ responsebody);
+			responsebody = obj.toJSONString();
+			requestheaders = "POST /tweets?d=disc HTTP/"
+					+ reqLine.getVersion() + "\nContent-Length: "
+					+ responsebody.getBytes().length + "\n\n";
+			
+			String[] serverParts = server.split(":");
+			Socket dataSock = null;
+			try {
+				dataSock = new Socket(serverParts[0],
+						Integer.parseInt(serverParts[1]));
+				OutputStream out = dataSock.getOutputStream();
+				rootLogger.trace("Sending Request to DataStore: "
+						+ requestheaders.trim() + " with body: "
+						+ responsebody);
 
-					out.write(requestheaders.getBytes());
-					out.write(responsebody.getBytes());
-				
-					String lineText = "";
-	
-					BufferedReader in = new BufferedReader(
-							new InputStreamReader(dataSock.getInputStream()));
-	
-					lineText = in.readLine().trim();
-					rootLogger
-							.trace("Received from DataStore: " + lineText);
-					if (lineText.equalsIgnoreCase("HTTP/1.1 200 OK\n")) {
-						if(!minSent) {
-							minSent = true;
-						}
-						count += 1;
+				out.write(requestheaders.getBytes());
+				out.write(responsebody.getBytes());
+			
+				String lineText = "";
+
+				BufferedReader in = new BufferedReader(
+						new InputStreamReader(dataSock.getInputStream()));
+
+				lineText = in.readLine().trim();
+				rootLogger
+						.trace("Received from DataStore: " + lineText);
+				if (lineText.equalsIgnoreCase("HTTP/1.1 200 OK\n")) {
+					if(!minSent) {
+						minSent = true;
 					}
-	
-					out.flush();
-					out.close();
-					in.close();
-					dataSock.close();
-					if (count == 3) {
-						String responseheaders = "HTTP/1.1 200 OK\n";
-						returnHeaderOnly(responseheaders);
-						count += 1;
-					}
-				} catch (IOException e) {
-					rootLogger.trace("Bad Server: " + server);
-					ds.removeServer(server);
 				}
+
+				out.flush();
+				out.close();
+				in.close();
+				dataSock.close();
+
+			} catch (IOException e) {
+				rootLogger.trace("Bad Server: " + server);
+				ds.removeServer(server);
 			}
-			if (count < 3) {
-				String responseheaders = "HTTP/1.1 200 OK\n";
-				try {
-					returnHeaderOnly(responseheaders);
-				} catch (IOException e) {
-					rootLogger.trace("returnHeadersOnly failed");
-				}
-			}
+		}
 	}
 
 	/**
