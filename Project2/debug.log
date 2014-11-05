@@ -1,9 +1,0 @@
-19:00:10:964 [trace] DiscReqProc.java:40 pool-2-thread-1: Received line: POST /tweets?me=10.10.34.160:2345 HTTP/1.1
-19:00:10:987 [trace] DataStore.java:350 pool-2-thread-1: Trying to add newServer: 10.10.34.160:2345
-19:00:10:988 [trace] DataStore.java:356 pool-2-thread-1: getServerLoadList requested
-19:00:10:988 [trace] DataStore.java:359 pool-2-thread-1: Acquired getServerLoadList Lock
-19:00:10:988 [trace] DataStore.java:392 pool-2-thread-1: Relinquished getServerLoadList Lock
-19:00:10:990 [trace] DiscReqProc.java:206 pool-2-thread-1: Sending: HTTP/1.1 200 OK
-
-19:00:10:991 [trace] DiscReqProc.java:107 pool-2-thread-1: Finished Working
-
