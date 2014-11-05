@@ -359,7 +359,15 @@ public class FEReqProc implements Runnable {
 			e.printStackTrace();
 		}
 		
-		return lineText;
+		try {
+			JSONObject obj = (JSONObject) parser.parse(lineText);
+			return (String) obj.get("min");
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return null;
 	}
 	
 	
