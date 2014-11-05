@@ -319,9 +319,12 @@ public class FEReqProc implements Runnable {
 			int PORT = Integer.parseInt(discParts[1]);
 			discSock = new Socket(IP, PORT);
 			String requestheaders = "GET /tweets?b=" + badServer + " HTTP/1.1\n";
+			
+			rootLogger.trace("Sending Request to DiscServer: " + requestheaders.trim());
 
 			OutputStream out = discSock.getOutputStream();
 			out.write(requestheaders.getBytes());
+			
 
 			// Receive response from DiscServer
 			String line;
@@ -336,11 +339,15 @@ public class FEReqProc implements Runnable {
 					char[] bytes = new char[bufferSize];
 					in.read(bytes, 0, bufferSize);
 					lineText = new String(bytes);
+					break;
 				}
 				else {
 					lineText = line;
 				}
-			}			
+			}	
+			
+			rootLogger.trace("Received from DiscServer: " + lineText);
+			
 			out.flush();
 			out.close();
 			in.close();

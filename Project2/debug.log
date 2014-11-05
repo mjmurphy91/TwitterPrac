@@ -235,3 +235,267 @@ Content-Length: 83 with body: {"vector":"1","tweet":"new #entry","hashtags":["en
 Content-Length: 27 with body: {"min":"10.10.34.160:2346"}
 16:43:20:449 [trace] DiscReqProc.java:106 pool-2-thread-7: Finished Working
 
+17:03:54:260 [trace] DiscReqProc.java:40 pool-2-thread-1: Received line: POST /tweets?me=10.10.34.160:2346 HTTP/1.1
+17:03:54:263 [trace] DataStore.java:350 pool-2-thread-1: Trying to add newServer: 10.10.34.160:2346
+17:03:54:263 [trace] DataStore.java:356 pool-2-thread-1: getServerLoadList requested
+17:03:54:263 [trace] DataStore.java:359 pool-2-thread-1: Acquired getServerLoadList Lock
+17:03:54:263 [trace] DataStore.java:392 pool-2-thread-1: Relinquished getServerLoadList Lock
+17:03:54:265 [trace] DiscReqProc.java:206 pool-2-thread-1: Sending: HTTP/1.1 200 OK
+
+17:03:54:266 [trace] DiscReqProc.java:107 pool-2-thread-1: Finished Working
+
+17:03:56:569 [trace] DiscReqProc.java:40 pool-2-thread-2: Received line: POST /tweets?me=10.0.1.1:2001 HTTP/1.1
+17:03:56:569 [trace] DataStore.java:350 pool-2-thread-2: Trying to add newServer: 10.0.1.1:2001
+17:03:56:569 [trace] DataStore.java:356 pool-2-thread-2: getServerLoadList requested
+17:03:56:570 [trace] DataStore.java:359 pool-2-thread-2: Acquired getServerLoadList Lock
+17:03:56:570 [trace] DataStore.java:385 pool-2-thread-2: Increased load of: 10.10.34.160:2346
+17:03:56:570 [trace] DataStore.java:392 pool-2-thread-2: Relinquished getServerLoadList Lock
+17:03:56:570 [trace] DiscReqProc.java:206 pool-2-thread-2: Sending: HTTP/1.1 200 OK
+
+17:03:56:574 [trace] DiscReqProc.java:169 pool-2-thread-2: Sending Request to DataStore: POST /tweets?d=disc HTTP/1.1
+Content-Length: 34 with body: {"min":true,"new":"10.0.1.1:2001"}
+17:03:56:654 [trace] DataReqProc.java:50 pool-2-thread-1: Received line: POST /tweets?d=disc HTTP/1.1
+17:03:56:658 [trace] DataReqProc.java:58 pool-2-thread-1: Buffer Size: 34
+17:03:56:658 [trace] DataReqProc.java:65 pool-2-thread-1: JsonText: {"min":true,"new":"10.0.1.1:2001"}
+17:03:56:660 [trace] DataStore.java:406 pool-2-thread-1: Acquired addServer Lock
+17:03:56:660 [trace] DataStore.java:411 pool-2-thread-1: Relinquished addServer Lock
+17:03:56:660 [trace] DataStore.java:475 pool-2-thread-1: Request for snapshot
+17:03:56:660 [trace] DataStore.java:477 pool-2-thread-1: Acquired getSnapshot Lock
+17:03:56:661 [trace] DataStore.java:506 pool-2-thread-1: Relinquished getSnapshot Lock
+17:03:56:664 [trace] DataReqProc.java:345 pool-2-thread-1: Sending Request to DataStore: POST /tweets?s=snap HTTP/1.1
+Content-Length: 77 with body: {"servers":{"10.0.1.1:2001":"0","10.10.34.160:2346":"0"},"data":{},"vers":{}}
+17:03:56:688 [trace] DataReqProc.java:359 pool-2-thread-1: Received from DataStore: HTTP/1.1 201 Created
+17:03:56:689 [trace] DataReqProc.java:401 pool-2-thread-1: Sending: HTTP/1.1 200 OK
+
+17:03:56:689 [trace] DiscReqProc.java:183 pool-2-thread-2: Received from DataStore: HTTP/1.1 200 OK
+17:03:56:690 [trace] DataReqProc.java:129 pool-2-thread-1: Finished Working
+
+17:03:56:690 [trace] DiscReqProc.java:107 pool-2-thread-2: Finished Working
+
+17:03:59:461 [trace] DiscReqProc.java:40 pool-2-thread-3: Received line: GET /tweets HTTP/1.1
+17:03:59:461 [trace] DataStore.java:322 pool-2-thread-3: Obtained getMinServerLoad Lock
+17:03:59:461 [trace] DataStore.java:336 pool-2-thread-3: Increased load of: 10.0.1.1:2001
+17:03:59:461 [trace] DataStore.java:340 pool-2-thread-3: Relinquished getMinServerLoad Lock
+17:03:59:461 [trace] DiscReqProc.java:122 pool-2-thread-3: Sending Request to FE: HTTP/1.1 200 OK
+Content-Length: 23 with body: {"min":"10.0.1.1:2001"}
+17:03:59:462 [trace] DiscReqProc.java:107 pool-2-thread-3: Finished Working
+
+17:04:26:511 [trace] DiscReqProc.java:40 pool-2-thread-4: Received line: GET /tweets HTTP/1.1
+17:04:26:511 [trace] DataStore.java:322 pool-2-thread-4: Obtained getMinServerLoad Lock
+17:04:26:511 [trace] DataStore.java:336 pool-2-thread-4: Increased load of: 10.0.1.1:2001
+17:04:26:511 [trace] DataStore.java:340 pool-2-thread-4: Relinquished getMinServerLoad Lock
+17:04:26:511 [trace] DiscReqProc.java:122 pool-2-thread-4: Sending Request to FE: HTTP/1.1 200 OK
+Content-Length: 23 with body: {"min":"10.0.1.1:2001"}
+17:04:26:512 [trace] DiscReqProc.java:107 pool-2-thread-4: Finished Working
+
+17:04:44:460 [trace] DataReqProc.java:50 pool-2-thread-2: Received line: POST /tweets?u=update HTTP/1.1
+17:04:44:460 [trace] DataReqProc.java:58 pool-2-thread-2: Buffer Size: 79
+17:04:44:461 [trace] DataReqProc.java:65 pool-2-thread-2: JsonText: {"hashtags":["test"],"self":"10.0.1.1:2001","vector":"1","tweet":"first #test"}
+17:04:44:462 [trace] DataStore.java:103 pool-2-thread-2: Request to add tweet: first #test
+17:04:44:462 [trace] DataStore.java:105 pool-2-thread-2: Acquired addTweets Lock
+17:04:44:463 [trace] DataStore.java:196 pool-2-thread-2: Relinquished addTweet Lock
+17:04:44:463 [trace] DataReqProc.java:401 pool-2-thread-2: Sending: HTTP/1.1 201 Created
+
+17:04:44:463 [trace] DataReqProc.java:129 pool-2-thread-2: Finished Working
+
+17:05:18:819 [trace] FEReqProc.java:73 pool-1-thread-1: Received line: POST /tweets HTTP/1.1
+17:05:18:822 [trace] FEReqProc.java:81 pool-1-thread-1: Buffer Size: 36
+17:05:18:822 [trace] FEReqProc.java:88 pool-1-thread-1: JsonText: {"text":"test from another #server"}
+17:05:18:824 [trace] FEReqProc.java:284 pool-1-thread-1: Sending Request to DataStore: POST /tweets HTTP/1.1
+Content-Length: 59 with body: {"tweet":"test from another #server","hashtags":["server"]}
+17:05:18:830 [trace] DataReqProc.java:50 pool-2-thread-3: Received line: POST /tweets?u=update HTTP/1.1
+17:05:18:831 [trace] DataReqProc.java:58 pool-2-thread-3: Buffer Size: 95
+17:05:18:831 [trace] DataReqProc.java:65 pool-2-thread-3: JsonText: {"hashtags":["server"],"self":"10.0.1.1:2001","vector":"2","tweet":"test from another #server"}
+17:05:18:831 [trace] DataStore.java:103 pool-2-thread-3: Request to add tweet: test from another #server
+17:05:18:831 [trace] DataStore.java:105 pool-2-thread-3: Acquired addTweets Lock
+17:05:18:831 [trace] DataStore.java:196 pool-2-thread-3: Relinquished addTweet Lock
+17:05:18:832 [trace] DataReqProc.java:401 pool-2-thread-3: Sending: HTTP/1.1 201 Created
+
+17:05:18:832 [trace] DataReqProc.java:129 pool-2-thread-3: Finished Working
+
+17:05:18:833 [trace] FEReqProc.java:297 pool-1-thread-1: Received from DataStore: HTTP/1.1 201 Created
+17:05:18:834 [trace] FEReqProc.java:377 pool-1-thread-1: Sending: HTTP/1.1 201 Created
+
+17:05:18:834 [trace] FEReqProc.java:138 pool-1-thread-1: Finished Working
+
+17:05:22:975 [trace] FEReqProc.java:73 pool-1-thread-2: Received line: GET /tweets?q=test HTTP/1.1
+17:05:22:976 [trace] FEReqProc.java:88 pool-1-thread-2: JsonText: 
+17:05:22:976 [trace] DataStore.java:79 pool-1-thread-2: Request for verion of hashtag: test requested
+17:05:22:977 [trace] DataStore.java:82 pool-1-thread-2: Acquired getVersion Lock
+17:05:22:977 [trace] DataStore.java:87 pool-1-thread-2: Relinquished getVersion Lock
+17:05:22:977 [trace] DataStore.java:303 pool-1-thread-2: Copy of serverList requested
+17:05:22:977 [trace] DataStore.java:306 pool-1-thread-2: Acquired getServerList Lock
+17:05:22:977 [trace] DataStore.java:311 pool-1-thread-2: Relinquished getServerList Lock
+17:05:22:982 [trace] FEReqProc.java:170 pool-1-thread-2: Received line: HTTP/1.1 200 OK
+17:05:22:982 [trace] FEReqProc.java:174 pool-1-thread-2: Buffer Size: 95
+17:05:22:982 [trace] FEReqProc.java:183 pool-1-thread-2: Received lineText: {"q":"test","vec":{"10.10.34.160:2346":"0","10.0.1.1:2001":"2"},"v":1,"tweets":["first #test"]}
+17:05:22:982 [trace] FEReqProc.java:187 pool-1-thread-2: Version for test was not current
+17:05:22:983 [trace] DataStore.java:103 pool-1-thread-2: Request to add tweet: first #test
+17:05:22:983 [trace] DataStore.java:105 pool-1-thread-2: Acquired addTweets Lock
+17:05:22:983 [trace] DataStore.java:219 pool-1-thread-2: Relinquished addTweet Lock
+17:05:22:983 [trace] FEReqProc.java:226 pool-1-thread-2: Closed DataServer socket connections
+17:05:22:983 [trace] DataStore.java:56 pool-1-thread-2: Tweets with hashtag: test requested
+17:05:22:984 [trace] DataStore.java:59 pool-1-thread-2: Acquired getTweet Lock
+17:05:22:984 [trace] DataStore.java:64 pool-1-thread-2: Relinquished getTweet Lock
+17:05:22:984 [trace] FEReqProc.java:233 pool-1-thread-2: Sending tweets: [first #test]
+17:05:22:984 [trace] FEReqProc.java:244 pool-1-thread-2: Closed Client socket connection
+17:05:22:985 [trace] FEReqProc.java:138 pool-1-thread-2: Finished Working
+
+17:05:57:703 [trace] DiscReqProc.java:40 pool-2-thread-5: Received line: POST /tweets?me=10.10.34.160:2347 HTTP/1.1
+17:05:57:703 [trace] DataStore.java:350 pool-2-thread-5: Trying to add newServer: 10.10.34.160:2347
+17:05:57:704 [trace] DataStore.java:356 pool-2-thread-5: getServerLoadList requested
+17:05:57:704 [trace] DataStore.java:359 pool-2-thread-5: Acquired getServerLoadList Lock
+17:05:57:704 [trace] DataStore.java:385 pool-2-thread-5: Increased load of: 10.10.34.160:2346
+17:05:57:704 [trace] DataStore.java:392 pool-2-thread-5: Relinquished getServerLoadList Lock
+17:05:57:704 [trace] DiscReqProc.java:206 pool-2-thread-5: Sending: HTTP/1.1 200 OK
+
+17:05:57:705 [trace] DiscReqProc.java:169 pool-2-thread-5: Sending Request to DataStore: POST /tweets?d=disc HTTP/1.1
+Content-Length: 38 with body: {"min":true,"new":"10.10.34.160:2347"}
+17:05:57:706 [trace] DataReqProc.java:50 pool-2-thread-4: Received line: POST /tweets?d=disc HTTP/1.1
+17:05:57:707 [trace] DataReqProc.java:58 pool-2-thread-4: Buffer Size: 38
+17:05:57:707 [trace] DataReqProc.java:65 pool-2-thread-4: JsonText: {"min":true,"new":"10.10.34.160:2347"}
+17:05:57:707 [trace] DataStore.java:406 pool-2-thread-4: Acquired addServer Lock
+17:05:57:707 [trace] DataStore.java:411 pool-2-thread-4: Relinquished addServer Lock
+17:05:57:708 [trace] DataStore.java:475 pool-2-thread-4: Request for snapshot
+17:05:57:708 [trace] DataStore.java:477 pool-2-thread-4: Acquired getSnapshot Lock
+17:05:57:708 [trace] DataStore.java:506 pool-2-thread-4: Relinquished getSnapshot Lock
+17:05:57:709 [trace] DataReqProc.java:345 pool-2-thread-4: Sending Request to DataStore: POST /tweets?s=snap HTTP/1.1
+Content-Length: 185 with body: {"servers":{"10.0.1.1:2001":"2","10.10.34.160:2346":"0","10.10.34.160:2347":"0"},"data":{"test":["first #test"],"server":["test from another #server"]},"vers":{"test":"1","server":"1"}}
+17:05:57:724 [trace] DataReqProc.java:50 pool-2-thread-1: Received line: POST /tweets?s=snap HTTP/1.1
+17:05:57:728 [trace] DataReqProc.java:58 pool-2-thread-1: Buffer Size: 185
+17:05:57:728 [trace] DataReqProc.java:65 pool-2-thread-1: JsonText: {"servers":{"10.0.1.1:2001":"2","10.10.34.160:2346":"0","10.10.34.160:2347":"0"},"data":{"test":["first #test"],"server":["test from another #server"]},"vers":{"test":"1","server":"1"}}
+17:05:57:730 [trace] DataStore.java:425 pool-2-thread-1: Updating server with snapshot
+17:05:57:730 [trace] DataStore.java:427 pool-2-thread-1: Acquired setSnapshot Lock
+17:05:57:731 [trace] DataStore.java:460 pool-2-thread-1: Relinquished setSnapshot Lock
+17:05:57:731 [trace] DataReqProc.java:401 pool-2-thread-1: Sending: HTTP/1.1 201 Created
+
+17:05:57:731 [trace] DataReqProc.java:129 pool-2-thread-1: Finished Working
+
+17:05:57:731 [trace] DataReqProc.java:359 pool-2-thread-4: Received from DataStore: HTTP/1.1 201 Created
+17:05:57:731 [trace] DataReqProc.java:401 pool-2-thread-4: Sending: HTTP/1.1 200 OK
+
+17:05:57:732 [trace] DataReqProc.java:129 pool-2-thread-4: Finished Working
+
+17:05:57:732 [trace] DiscReqProc.java:183 pool-2-thread-5: Received from DataStore: HTTP/1.1 200 OK
+17:05:57:734 [trace] DiscReqProc.java:169 pool-2-thread-5: Sending Request to DataStore: POST /tweets?d=disc HTTP/1.1
+Content-Length: 38 with body: {"min":true,"new":"10.10.34.160:2347"}
+17:05:57:740 [trace] DataReqProc.java:50 pool-2-thread-2: Received line: POST /tweets?s=snap HTTP/1.1
+17:05:57:741 [trace] DataReqProc.java:58 pool-2-thread-2: Buffer Size: 185
+17:05:57:742 [trace] DataReqProc.java:65 pool-2-thread-2: JsonText: {"servers":{"10.10.34.160:2346":"0","10.0.1.1:2001":"2","10.10.34.160:2347":"0"},"data":{"server":["test from another #server"],"test":["first #test"]},"vers":{"server":"1","test":"1"}}
+17:05:57:742 [trace] DataStore.java:425 pool-2-thread-2: Updating server with snapshot
+17:05:57:743 [trace] DataStore.java:427 pool-2-thread-2: Acquired setSnapshot Lock
+17:05:57:743 [trace] DataStore.java:460 pool-2-thread-2: Relinquished setSnapshot Lock
+17:05:57:743 [trace] DataReqProc.java:401 pool-2-thread-2: Sending: HTTP/1.1 201 Created
+
+17:05:57:743 [trace] DataReqProc.java:129 pool-2-thread-2: Finished Working
+
+17:05:57:745 [trace] DiscReqProc.java:183 pool-2-thread-5: Received from DataStore: HTTP/1.1 200 OK
+17:05:57:745 [trace] DiscReqProc.java:107 pool-2-thread-5: Finished Working
+
+17:06:19:849 [trace] DiscReqProc.java:40 pool-2-thread-6: Received line: GET /tweets HTTP/1.1
+17:06:19:849 [trace] DataStore.java:322 pool-2-thread-6: Obtained getMinServerLoad Lock
+17:06:19:849 [trace] DataStore.java:336 pool-2-thread-6: Increased load of: 10.10.34.160:2347
+17:06:19:849 [trace] DataStore.java:340 pool-2-thread-6: Relinquished getMinServerLoad Lock
+17:06:19:850 [trace] DiscReqProc.java:122 pool-2-thread-6: Sending Request to FE: HTTP/1.1 200 OK
+Content-Length: 27 with body: {"min":"10.10.34.160:2347"}
+17:06:19:850 [trace] DiscReqProc.java:107 pool-2-thread-6: Finished Working
+
+17:06:41:555 [trace] FEReqProc.java:73 pool-1-thread-1: Received line: GET /tweets?q=server HTTP/1.1
+17:06:41:560 [trace] FEReqProc.java:88 pool-1-thread-1: JsonText: 
+17:06:41:560 [trace] DataStore.java:79 pool-1-thread-1: Request for verion of hashtag: server requested
+17:06:41:560 [trace] DataStore.java:82 pool-1-thread-1: Acquired getVersion Lock
+17:06:41:560 [trace] DataStore.java:87 pool-1-thread-1: Relinquished getVersion Lock
+17:06:41:561 [trace] DataStore.java:303 pool-1-thread-1: Copy of serverList requested
+17:06:41:561 [trace] DataStore.java:306 pool-1-thread-1: Acquired getServerList Lock
+17:06:41:561 [trace] DataStore.java:311 pool-1-thread-1: Relinquished getServerList Lock
+17:06:41:563 [trace] DataReqProc.java:50 pool-2-thread-3: Received line: GET /tweets?q=server&v=0 HTTP/1.1
+17:06:41:563 [trace] DataReqProc.java:58 pool-2-thread-3: Buffer Size: 33
+17:06:41:563 [trace] DataReqProc.java:65 pool-2-thread-3: JsonText: {"vec":{"10.10.34.160:2347":"0"}}
+17:06:41:564 [trace] DataReqProc.java:140 pool-2-thread-3: Received GET request with hashtag: server and version: 0
+17:06:41:564 [trace] DataStore.java:79 pool-2-thread-3: Request for verion of hashtag: server requested
+17:06:41:564 [trace] DataStore.java:82 pool-2-thread-3: Acquired getVersion Lock
+17:06:41:564 [trace] DataStore.java:87 pool-2-thread-3: Relinquished getVersion Lock
+17:06:41:564 [trace] DataStore.java:303 pool-2-thread-3: Copy of serverList requested
+17:06:41:565 [trace] DataStore.java:306 pool-2-thread-3: Acquired getServerList Lock
+17:06:41:565 [trace] DataStore.java:311 pool-2-thread-3: Relinquished getServerList Lock
+17:06:41:565 [trace] DataStore.java:56 pool-2-thread-3: Tweets with hashtag: server requested
+17:06:41:565 [trace] DataStore.java:59 pool-2-thread-3: Acquired getTweet Lock
+17:06:41:565 [trace] DataStore.java:64 pool-2-thread-3: Relinquished getTweet Lock
+17:06:41:567 [trace] DataReqProc.java:129 pool-2-thread-3: Finished Working
+
+17:06:41:567 [trace] FEReqProc.java:170 pool-1-thread-1: Received line: HTTP/1.1 200 OK
+17:06:41:568 [trace] FEReqProc.java:174 pool-1-thread-1: Buffer Size: 135
+17:06:41:568 [trace] FEReqProc.java:183 pool-1-thread-1: Received lineText: {"v":1,"q":"server","tweets":["test from another #server"],"vec":{"10.0.1.1:2001":"2","10.10.34.160:2346":"0","10.10.34.160:2347":"0"}}
+17:06:41:568 [trace] FEReqProc.java:187 pool-1-thread-1: Version for server was not current
+17:06:41:569 [trace] DataStore.java:103 pool-1-thread-1: Request to add tweet: test from another #server
+17:06:41:569 [trace] DataStore.java:105 pool-1-thread-1: Acquired addTweets Lock
+17:06:41:569 [trace] DataStore.java:219 pool-1-thread-1: Relinquished addTweet Lock
+17:06:41:569 [trace] FEReqProc.java:226 pool-1-thread-1: Closed DataServer socket connections
+17:06:41:570 [trace] DataStore.java:56 pool-1-thread-1: Tweets with hashtag: server requested
+17:06:41:570 [trace] DataStore.java:59 pool-1-thread-1: Acquired getTweet Lock
+17:06:41:570 [trace] DataStore.java:64 pool-1-thread-1: Relinquished getTweet Lock
+17:06:41:570 [trace] FEReqProc.java:233 pool-1-thread-1: Sending tweets: [test from another #server]
+17:06:41:570 [trace] FEReqProc.java:244 pool-1-thread-1: Closed Client socket connection
+17:06:41:571 [trace] FEReqProc.java:138 pool-1-thread-1: Finished Working
+
+17:06:45:984 [trace] FEReqProc.java:73 pool-1-thread-2: Received line: GET /tweets?q=test HTTP/1.1
+17:06:45:985 [trace] FEReqProc.java:88 pool-1-thread-2: JsonText: 
+17:06:45:985 [trace] DataStore.java:79 pool-1-thread-2: Request for verion of hashtag: test requested
+17:06:45:985 [trace] DataStore.java:82 pool-1-thread-2: Acquired getVersion Lock
+17:06:45:985 [trace] DataStore.java:87 pool-1-thread-2: Relinquished getVersion Lock
+17:06:45:985 [trace] DataStore.java:303 pool-1-thread-2: Copy of serverList requested
+17:06:45:986 [trace] DataStore.java:306 pool-1-thread-2: Acquired getServerList Lock
+17:06:45:986 [trace] DataStore.java:311 pool-1-thread-2: Relinquished getServerList Lock
+17:06:45:987 [trace] DataReqProc.java:50 pool-2-thread-4: Received line: GET /tweets?q=test&v=0 HTTP/1.1
+17:06:45:987 [trace] DataReqProc.java:58 pool-2-thread-4: Buffer Size: 77
+17:06:45:987 [trace] DataReqProc.java:65 pool-2-thread-4: JsonText: {"vec":{"10.0.1.1:2001":"2","10.10.34.160:2346":"0","10.10.34.160:2347":"0"}}
+17:06:45:987 [trace] DataReqProc.java:140 pool-2-thread-4: Received GET request with hashtag: test and version: 0
+17:06:45:987 [trace] DataStore.java:79 pool-2-thread-4: Request for verion of hashtag: test requested
+17:06:45:988 [trace] DataStore.java:82 pool-2-thread-4: Acquired getVersion Lock
+17:06:45:988 [trace] DataStore.java:87 pool-2-thread-4: Relinquished getVersion Lock
+17:06:45:988 [trace] DataStore.java:303 pool-2-thread-4: Copy of serverList requested
+17:06:45:988 [trace] DataStore.java:306 pool-2-thread-4: Acquired getServerList Lock
+17:06:45:988 [trace] DataStore.java:311 pool-2-thread-4: Relinquished getServerList Lock
+17:06:45:988 [trace] DataStore.java:56 pool-2-thread-4: Tweets with hashtag: test requested
+17:06:45:989 [trace] DataStore.java:59 pool-2-thread-4: Acquired getTweet Lock
+17:06:45:989 [trace] DataStore.java:64 pool-2-thread-4: Relinquished getTweet Lock
+17:06:45:989 [trace] DataReqProc.java:129 pool-2-thread-4: Finished Working
+
+17:06:45:989 [trace] FEReqProc.java:170 pool-1-thread-2: Received line: HTTP/1.1 200 OK
+17:06:45:990 [trace] FEReqProc.java:174 pool-1-thread-2: Buffer Size: 119
+17:06:45:990 [trace] FEReqProc.java:183 pool-1-thread-2: Received lineText: {"v":1,"q":"test","tweets":["first #test"],"vec":{"10.0.1.1:2001":"2","10.10.34.160:2346":"0","10.10.34.160:2347":"0"}}
+17:06:45:990 [trace] FEReqProc.java:187 pool-1-thread-2: Version for test was not current
+17:06:45:990 [trace] DataStore.java:103 pool-1-thread-2: Request to add tweet: first #test
+17:06:45:990 [trace] DataStore.java:105 pool-1-thread-2: Acquired addTweets Lock
+17:06:45:990 [trace] DataStore.java:219 pool-1-thread-2: Relinquished addTweet Lock
+17:06:45:991 [trace] FEReqProc.java:226 pool-1-thread-2: Closed DataServer socket connections
+17:06:45:991 [trace] DataStore.java:56 pool-1-thread-2: Tweets with hashtag: test requested
+17:06:45:991 [trace] DataStore.java:59 pool-1-thread-2: Acquired getTweet Lock
+17:06:45:991 [trace] DataStore.java:64 pool-1-thread-2: Relinquished getTweet Lock
+17:06:45:991 [trace] FEReqProc.java:233 pool-1-thread-2: Sending tweets: [first #test]
+17:06:45:991 [trace] FEReqProc.java:244 pool-1-thread-2: Closed Client socket connection
+17:06:45:992 [trace] FEReqProc.java:138 pool-1-thread-2: Finished Working
+
+17:07:15:866 [trace] DiscReqProc.java:40 pool-2-thread-7: Received line: GET /tweets?b=10.0.1.1:2001 HTTP/1.1
+17:07:15:867 [trace] DataStore.java:515 pool-2-thread-7: Acquired removeServer Lock
+17:07:15:867 [trace] DataStore.java:523 pool-2-thread-7: Relinquished removeServer Lock
+17:07:15:867 [trace] DiscReqProc.java:52 pool-2-thread-7: Removing bad server: 10.0.1.1:2001
+17:07:15:867 [trace] DataStore.java:322 pool-2-thread-7: Obtained getMinServerLoad Lock
+17:07:15:867 [trace] DataStore.java:336 pool-2-thread-7: Increased load of: 10.10.34.160:2347
+17:07:15:867 [trace] DataStore.java:340 pool-2-thread-7: Relinquished getMinServerLoad Lock
+17:07:15:868 [trace] DiscReqProc.java:122 pool-2-thread-7: Sending Request to FE: HTTP/1.1 200 OK
+Content-Length: 27 with body: {"min":"10.10.34.160:2347"}
+17:07:15:868 [trace] DiscReqProc.java:107 pool-2-thread-7: Finished Working
+
+17:13:00:296 [trace] FEReqProc.java:41 main: Problem with server: 10.0.1.1
+17:13:00:297 [trace] DiscReqProc.java:40 pool-2-thread-8: Received line: GET /tweets?b=10.0.1.1:2001 HTTP/1.1
+17:13:00:298 [trace] DataStore.java:515 pool-2-thread-8: Acquired removeServer Lock
+17:13:00:298 [trace] DataStore.java:523 pool-2-thread-8: Relinquished removeServer Lock
+17:13:00:298 [trace] DiscReqProc.java:52 pool-2-thread-8: Removing bad server: 10.0.1.1:2001
+17:13:00:298 [trace] DataStore.java:322 pool-2-thread-8: Obtained getMinServerLoad Lock
+17:13:00:298 [trace] DataStore.java:336 pool-2-thread-8: Increased load of: 10.10.34.160:2346
+17:13:00:298 [trace] DataStore.java:340 pool-2-thread-8: Relinquished getMinServerLoad Lock
+17:13:00:298 [trace] DiscReqProc.java:122 pool-2-thread-8: Sending Request to FE: HTTP/1.1 200 OK
+Content-Length: 27 with body: {"min":"10.10.34.160:2346"}
+17:13:00:299 [trace] DiscReqProc.java:107 pool-2-thread-8: Finished Working
+
