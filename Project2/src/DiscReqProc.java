@@ -49,6 +49,7 @@ public class DiscReqProc implements Runnable {
 				if (reqLine.getMethod().equalsIgnoreCase("GET")) {
 					if(reqLine.getParameters().containsKey("b")) {
 						ds.removeServer(reqLine.getParameters().get("b"));
+						rootLogger.trace("Removing bad server: " + reqLine.getParameters().get("b"));
 					}
 					
 					String minServer = ds.getMinServerLoad();

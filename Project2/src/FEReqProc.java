@@ -314,7 +314,7 @@ public class FEReqProc implements Runnable {
 		String lineText = "";
 		Socket discSock;
 		try {
-			//Send request to DataServer
+			//Send request to DiscServer
 			String IP = discParts[0];
 			int PORT = Integer.parseInt(discParts[1]);
 			discSock = new Socket(IP, PORT);
@@ -323,7 +323,7 @@ public class FEReqProc implements Runnable {
 			OutputStream out = discSock.getOutputStream();
 			out.write(requestheaders.getBytes());
 
-			// Receive response from DataServer
+			// Receive response from DiscServer
 			String line;
 			BufferedReader in = new BufferedReader(new InputStreamReader(
 					discSock.getInputStream()));
