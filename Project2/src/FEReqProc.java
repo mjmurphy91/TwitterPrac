@@ -35,8 +35,8 @@ public class FEReqProc implements Runnable {
 		while(dataSock == null) {
 			String[] dataServerParts = dataServer[0].split(":");
 			try {
+				System.out.println("Connecting to: " + dataServerParts[0] + ":" + dataServerParts[1]);
 				dataSock = new Socket(dataServerParts[0], Integer.parseInt(dataServerParts[1]));
-				System.out.println("Connected to: " + dataServerParts[0] + ":" + dataServerParts[1]);
 			} catch (NumberFormatException | IOException e) {
 				rootLogger.trace("Problem with server: " + dataServerParts[0]);
 				dataSock = null;
