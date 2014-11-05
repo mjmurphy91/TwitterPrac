@@ -47,6 +47,10 @@ public class DiscReqProc implements Runnable {
 
 				// GET request
 				if (reqLine.getMethod().equalsIgnoreCase("GET")) {
+					if(reqLine.getParameters().containsKey("b")) {
+						ds.removeServer(reqLine.getParameters().get("b"));
+					}
+					
 					String minServer = ds.getMinServerLoad();
 					sendDataServerRequest(minServer);
 				}

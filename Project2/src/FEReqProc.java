@@ -40,7 +40,7 @@ public class FEReqProc implements Runnable {
 			} catch (NumberFormatException | IOException e) {
 				rootLogger.trace("Problem with server: " + dataServerParts[0]);
 				dataSock = null;
-				String server = getDataServer(discServer);
+				String server = getDataServer(discServer, dataServer[0]);
 				if(server.split(":").length < 2) {
 					dataServer[0] = "Bad:1";
 				}
@@ -309,7 +309,7 @@ public class FEReqProc implements Runnable {
 	/**
 	 * Contacts Discovery Server to find out who its new Data Server is
 	 */
-	private String getDataServer(String discServer) {
+	private String getDataServer(String discServer, String badServer) {
 		String[] discParts = discServer.split(":");
 		String lineText = "";
 		Socket discSock;
@@ -318,7 +318,7 @@ public class FEReqProc implements Runnable {
 			String IP = discParts[0];
 			int PORT = Integer.parseInt(discParts[1]);
 			discSock = new Socket(IP, PORT);
-			String requestheaders = "GET /tweets HTTP/1.1\n";
+			String requestheaders = "GET /tweets?b=" + badServer + " HTTP/1.1\n";
 
 			OutputStream out = discSock.getOutputStream();
 			out.write(requestheaders.getBytes());
