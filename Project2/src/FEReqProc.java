@@ -30,6 +30,9 @@ public class FEReqProc implements Runnable {
 	public FEReqProc(Socket sock, DataStore ds, String[] dataServer, String discServer) {
 		this.sock = sock;
 		this.dataSock = null;
+		parser = new JSONParser();
+		this.ds = ds;
+		reqLine = null;
 
 		//Guarantee connection to a Data Server if at least one is still up
 		while(dataSock == null) {
@@ -50,10 +53,6 @@ public class FEReqProc implements Runnable {
 				}
 			}
 		}
-		
-		parser = new JSONParser();
-		this.ds = ds;
-		reqLine = null;
 	}
 	
 	
@@ -363,7 +362,6 @@ public class FEReqProc implements Runnable {
 			JSONObject obj = (JSONObject) parser.parse(lineText);
 			return (String) obj.get("min");
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
